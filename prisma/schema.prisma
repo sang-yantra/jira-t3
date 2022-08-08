@@ -1,0 +1,79 @@
+generator client {
+    provider        = "prisma-client-js"
+    previewFeatures = ["referentialIntegrity"]
+}
+
+datasource db {
+    provider             = "mysql"
+    url                  = env("DATABASE_URL")
+    shadowDatabaseUrl    = env("SHADOW_URL")
+    referentialIntegrity = "prisma"
+}
+
+model TASK {
+    ID                  Int     @id @default(autoincrement())
+    TITLE               String  @db.VarChar(100)
+    DESCRiPTION         String? @db.VarChar(2000)
+    ACCEPTANCE_CRITERIA String? @db.VarChar(2000)
+    NFR                 String? @db.VarChar(2000)
+    STATUS              String  @default("NEW")
+    PRIORITY            String  @default("LOW")
+    ORIGINAL_ESTIMATE   Int?
+    COMPLETED           Int?
+    REMAINING           Int?
+}
+
+model Issue {
+    IssueId                             Int        @id @default(autoincrement())
+    IssueTypeId                         Int?
+    ShortSummary                        String?    @db.VarChar(255)
+    Description                         String?    @db.VarChar(255)
+    ReporterId                          Int?
+    AssigneeId                          Int?
+    PriorityId                          Int?
+    IssueType                           IssueType? @relation(fields: [IssueTypeId], references: [IssueTypeId], onDelete: NoAction, onUpdate: NoAction, map: "Issue_ibfk_1")
+    UserInfo_Issue_ReporterIdToUserInfo UserInfo?  @relation("Issue_ReporterIdToUserInfo", fields: [ReporterId], references: [UserId], onDelete: NoAction, onUpdate: NoAction, map: "Issue_ibfk_2")
+    UserInfo_Issue_AssigneeIdToUserInfo UserInfo?  @relation("Issue_AssigneeIdToUserInfo", fields: [AssigneeId], references: [UserId], onDelete: NoAction, onUpdate: NoAction, map: "Issue_ibfk_3")
+    Priority                            Priority?  @relation(fields: [PriorityId], references: [PriorityId], onDelete: NoAction, onUpdate: NoAction, map: "Issue_ibfk_4")
+
+    @@index([AssigneeId], map: "AssigneeId")
+    @@index([IssueTypeId], map: "IssueTypeId")
+    @@index([PriorityId], map: "PriorityId")
+    @@index([ReporterId], map: "ReporterId")
+}
+
+model IssueType {
+    IssueTypeId      Int     @id @default(autoincrement())
+    IssueName        String  @db.VarChar(255)
+    IssueDescription String? @db.VarChar(255)
+    Issue            Issue[]
+}
+
+model Priority {
+    PriorityId  Int     @id @default(autoincrement())
+    Name        String  @db.VarChar(255)
+    Description String? @db.VarChar(255)
+    Issue       Issue[]
+}
+
+model UserInfo {
+    UserId                           Int     @id @default(autoincrement())
+    Name                             String  @db.VarChar(255)
+    UserType                         String? @db.VarChar(50)
+    Issue_Issue_ReporterIdToUserInfo Issue[] @relation("Issue_ReporterIdToUserInfo")
+    Issue_Issue_AssigneeIdToUserInfo Issue[] @relation("Issue_AssigneeIdToUserInfo")
+}
+
+model categories {
+    id   Int    @id @default(autoincrement())
+    name String @db.VarChar(255)
+}
+
+model user {
+    Id   Int     @id @default(autoincrement())
+    Name String? @db.VarChar(100)
+}
+
+model Example {
+    id String @id @default(cuid())
+}
